@@ -3,1238 +3,520 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>Touch Grass Baseball — Live Overlay</title>
+<title>Touch Grass Baseball</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&family=Barlow+Condensed:wght@400;600;700;800&display=swap');
-
 *{margin:0;padding:0;box-sizing:border-box;}
-:root{
-  --gold:#F0B429;
-  --amber:#FF7D00;
-  --red:#FF2D55;
-  --green:#00E676;
-  --cyan:#00E5FF;
-  --dark:#080810;
-  --panel:rgba(6,6,16,0.94);
-  --sel:rgba(240,180,41,0.4);
-  --sel-b:#F0B429;
-  --parlay-1:rgba(0,229,255,0.35);
-  --parlay-b:#00E5FF;
-  --foul-col:rgba(255,45,85,0.4);
-  --foul-b:#FF2D55;
-  --hot:rgba(255,125,0,0.3);
-}
-
-body{
-  background:#0a0a14;
-  font-family:'Barlow Condensed',sans-serif;
-  height:100vh;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  overflow:hidden;
-  color:#fff;
-}
-
-/* ── LIVE FEED SIMULATION ── */
-.live-feed{
-  position:relative;
-  width:100%;
-  max-width:540px;
-  flex:1;
-  background:#000;
-  overflow:hidden;
-  min-height:0;
-}
-
-/* Simulated broadcast — dark field with stadium atmosphere */
-.broadcast-bg{
-  position:absolute;
-  inset:0;
-  background:
-    radial-gradient(ellipse 120% 60% at 50% 110%, #2a5a14 0%, #1a3a0a 40%, #0a1a04 70%, #000 100%);
-  overflow:hidden;
-}
-
-/* Fake broadcast scanlines */
-.broadcast-bg::before{
-  content:'';
-  position:absolute;
-  inset:0;
-  background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.08) 3px,rgba(0,0,0,0.08) 4px);
-  pointer-events:none;
-  z-index:1;
-}
-
-/* Vignette */
-.broadcast-bg::after{
-  content:'';
-  position:absolute;
-  inset:0;
-  background:radial-gradient(ellipse 90% 90% at 50% 50%,transparent 50%,rgba(0,0,0,0.6) 100%);
-  pointer-events:none;
-  z-index:1;
-}
-
-/* Broadcast field SVG */
-.field-svg{
-  position:absolute;
-  bottom:0;left:0;right:0;
-  width:100%;
-  pointer-events:none;
-  z-index:2;
-}
-
-/* Live badge */
-.live-badge{
-  position:absolute;
-  top:10px;left:12px;
-  z-index:20;
-  display:flex;align-items:center;gap:6px;
-  background:rgba(0,0,0,0.7);
-  border:1px solid rgba(255,255,255,0.12);
-  border-radius:4px;
-  padding:3px 8px;
-  font-family:'DM Mono',monospace;
-  font-size:10px;
-  color:#aaa;
-  letter-spacing:1px;
-}
-.live-dot{
-  width:7px;height:7px;border-radius:50%;
-  background:var(--red);
-  box-shadow:0 0 8px var(--red);
-  animation:blink 1.2s ease-in-out infinite;
-}
-@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+:root{--gold:#F0B429;--amber:#FF7D00;--red:#FF2D55;--green:#00E676;--cyan:#00E5FF;--dark:#05050e;--panel:rgba(4,4,14,0.97);}
+body{background:var(--dark);font-family:'Barlow Condensed',sans-serif;height:100vh;display:flex;flex-direction:column;align-items:center;overflow:hidden;color:#fff;}
+.live-feed{position:relative;width:100%;max-width:540px;flex:1;min-height:0;overflow:hidden;background:#000;}
+.stadium-sky{position:absolute;inset:0;background:linear-gradient(180deg,#06090f 0%,#0a1020 20%,#0d1428 40%,#080e1a 70%,#04080f 100%);z-index:1;}
+.upper-deck{position:absolute;top:0;left:0;right:0;height:50%;z-index:2;overflow:hidden;}
+.ud-left{position:absolute;top:0;left:0;width:46%;height:100%;background:linear-gradient(108deg,#100a04 0%,#1e1208 30%,#2a1a0c 55%,#1a1008 80%,#0e0804 100%);clip-path:polygon(0 0,100% 18%,100% 100%,0 100%);}
+.ud-right{position:absolute;top:0;right:0;width:46%;height:100%;background:linear-gradient(252deg,#100a04 0%,#1e1208 30%,#2a1a0c 55%,#1a1008 80%,#0e0804 100%);clip-path:polygon(0 18%,100% 0,100% 100%,0 100%);}
+.ud-center{position:absolute;top:0;left:40%;right:40%;height:100%;background:linear-gradient(180deg,#161008 0%,#1e1610 40%,#141008 100%);}
+.ud-seats{position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 4px,rgba(0,0,0,.18) 4px,rgba(0,0,0,.18) 5px),repeating-linear-gradient(90deg,rgba(60,20,6,.25),rgba(60,20,6,.25) 7px,rgba(40,14,4,.3) 7px,rgba(40,14,4,.3) 14px);z-index:3;}
+.crowd{position:absolute;inset:0;z-index:4;background:radial-gradient(2px 2px at 7% 28%,rgba(215,155,95,.38),transparent),radial-gradient(1px 1px at 11% 44%,rgba(195,140,90,.32),transparent),radial-gradient(2px 2px at 16% 22%,rgba(225,165,105,.35),transparent),radial-gradient(1px 1px at 21% 52%,rgba(205,150,95,.28),transparent),radial-gradient(2px 2px at 27% 33%,rgba(185,130,75,.32),transparent),radial-gradient(1px 1px at 37% 26%,rgba(225,165,105,.3),transparent),radial-gradient(1px 1px at 44% 40%,rgba(185,135,85,.28),transparent),radial-gradient(2px 2px at 51% 30%,rgba(205,148,92,.3),transparent),radial-gradient(1px 1px at 57% 48%,rgba(225,162,100,.24),transparent),radial-gradient(2px 2px at 64% 36%,rgba(185,128,74,.3),transparent),radial-gradient(1px 1px at 71% 26%,rgba(205,148,92,.26),transparent),radial-gradient(2px 2px at 77% 43%,rgba(225,162,100,.3),transparent),radial-gradient(2px 2px at 89% 40%,rgba(205,148,92,.32),transparent);}
+.stadium-lights{position:absolute;top:0;left:0;right:0;height:48%;z-index:5;pointer-events:none;background:radial-gradient(ellipse 9% 20% at 7% 4%,rgba(255,248,220,.24),transparent),radial-gradient(ellipse 9% 20% at 93% 4%,rgba(255,248,220,.24),transparent),radial-gradient(ellipse 6% 14% at 17% 2%,rgba(255,248,200,.15),transparent),radial-gradient(ellipse 6% 14% at 83% 2%,rgba(255,248,200,.15),transparent);}
+.light-spill{position:absolute;top:0;left:0;right:0;height:52%;z-index:6;pointer-events:none;background:radial-gradient(ellipse 30% 55% at 12% 0%,rgba(255,240,180,.07),transparent 70%),radial-gradient(ellipse 30% 55% at 88% 0%,rgba(255,240,180,.07),transparent 70%);}
+.lower-deck{position:absolute;top:38%;left:0;right:0;height:24%;z-index:7;overflow:hidden;}
+.ld-left{position:absolute;left:0;top:0;width:28%;height:100%;background:linear-gradient(98deg,#0c0804 0%,#161008 45%,#1e1408 100%);clip-path:polygon(0 0,100% 28%,100% 100%,0 100%);}
+.ld-right{position:absolute;right:0;top:0;width:28%;height:100%;background:linear-gradient(262deg,#0c0804 0%,#161008 45%,#1e1408 100%);clip-path:polygon(0 28%,100% 0,100% 100%,0 100%);}
+.ld-seats{position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 6px,rgba(0,0,0,.22) 6px,rgba(0,0,0,.22) 7px);z-index:1;}
+.ld-crowd{position:absolute;inset:0;z-index:2;background:radial-gradient(3px 3px at 5% 38%,rgba(220,168,118,.48),transparent),radial-gradient(2px 2px at 9% 58%,rgba(200,148,100,.42),transparent),radial-gradient(3px 3px at 81% 40%,rgba(220,168,118,.42),transparent),radial-gradient(2px 2px at 86% 60%,rgba(200,148,100,.38),transparent),radial-gradient(3px 3px at 91% 35%,rgba(232,172,122,.36),transparent);}
+.of-wall{position:absolute;top:52%;left:0;right:0;height:9%;z-index:8;background:linear-gradient(180deg,#1e4070 0%,#14306a 50%,#0a2050 100%);clip-path:polygon(2% 100%,7% 0%,93% 0%,98% 100%);}
+.of-wall::before{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent 0%,rgba(255,220,0,.07) 8%,transparent 14%,rgba(255,100,50,.07) 23%,transparent 30%,rgba(80,180,255,.07) 39%,transparent 46%,rgba(255,220,0,.07) 55%,transparent 62%,rgba(50,200,100,.07) 72%,transparent 78%);}
+.wall-text{position:absolute;inset:0;display:flex;align-items:center;justify-content:space-around;padding:0 8%;font-family:'Bebas Neue',sans-serif;font-size:8px;color:rgba(255,255,255,.28);letter-spacing:2px;z-index:1;}
+.of-grass{position:absolute;top:57%;left:0;right:0;height:23%;z-index:7;}
+.of-grass::before{content:'';position:absolute;inset:0;clip-path:polygon(0% 100%,5% 0%,95% 0%,100% 100%);background:repeating-linear-gradient(90deg,#1a5a10,#1a5a10 20px,#1e6614 20px,#1e6614 40px);}
+.of-grass::after{content:'';position:absolute;inset:0;clip-path:polygon(0% 100%,5% 0%,95% 0%,100% 100%);background:repeating-linear-gradient(90deg,rgba(0,0,0,.1),rgba(0,0,0,.1) 20px,transparent 20px,transparent 40px);}
+.infield-dirt{position:absolute;top:74%;left:3%;right:3%;height:22%;z-index:9;background:radial-gradient(ellipse 92% 100% at 50% 98%,#6e4018 0%,#5a3210 25%,#4c2a0c 55%,#3c2008 100%);clip-path:ellipse(50% 58% at 50% 92%);}
+.infield-grass{position:absolute;top:77%;left:20%;right:20%;height:16%;z-index:10;background:linear-gradient(180deg,#1e6614 0%,#1a5510 50%,#164a0e 100%);clip-path:polygon(50% 0%,100% 50%,50% 100%,0% 50%);}
+.pitchers-mound{position:absolute;top:77%;left:50%;transform:translateX(-50%);width:20px;height:11px;background:radial-gradient(ellipse,#7e4820 0%,#5e3210 65%,#4a2808 100%);border-radius:50%;z-index:12;}
+.pitcher{position:absolute;top:67.5%;left:50%;transform:translateX(-50%);z-index:13;width:14px;height:26px;pointer-events:none;}
+.pitcher::before{content:'';position:absolute;left:4px;top:7px;width:6px;height:11px;background:#d8c098;border-radius:3px 3px 0 0;}
+.pitcher::after{content:'';position:absolute;left:3px;top:0;width:8px;height:8px;background:#c0a080;border-radius:50%;}
+.foul-line-left{position:absolute;z-index:11;bottom:5%;left:50%;transform-origin:bottom left;width:1.5px;height:58%;background:linear-gradient(0deg,rgba(255,255,255,.45),rgba(255,255,255,.04));transform:translateX(-1px) rotate(-30deg);}
+.foul-line-right{position:absolute;z-index:11;bottom:5%;right:50%;transform-origin:bottom right;width:1.5px;height:58%;background:linear-gradient(0deg,rgba(255,255,255,.45),rgba(255,255,255,.04));transform:translateX(1px) rotate(30deg);}
+.batter-box{position:absolute;bottom:5%;left:50%;transform:translateX(-50%);z-index:14;width:72px;height:32px;border:1.5px solid rgba(255,255,255,.22);background:transparent;}
+.batter-box::before{content:'';position:absolute;left:50%;top:0;width:1.5px;height:100%;background:rgba(255,255,255,.1);}
+.home-plate{position:absolute;bottom:3%;left:50%;transform:translateX(-50%);z-index:15;width:18px;height:12px;background:rgba(255,255,255,.65);clip-path:polygon(0% 0%,100% 0%,100% 58%,50% 100%,0% 58%);}
+.scanlines{position:absolute;inset:0;z-index:30;pointer-events:none;background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,.07) 3px,rgba(0,0,0,.07) 4px);}
+.vignette{position:absolute;inset:0;z-index:31;pointer-events:none;background:radial-gradient(ellipse 95% 88% at 50% 50%,transparent 45%,rgba(0,0,0,.75) 100%);}
+/* GRID */
+.grid-overlay{position:absolute;inset:0;z-index:20;pointer-events:none;}
+.grid-cell{position:absolute;border:1.5px solid rgba(255,255,255,0.25);background:rgba(255,255,255,0.06);pointer-events:all;cursor:pointer;transition:background .1s,border-color .1s;display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:7px;color:rgba(255,255,255,0.5);}
+.grid-cell:hover{background:rgba(255,255,255,.18)!important;border-color:rgba(255,255,255,.6)!important;z-index:5;}
+.grid-cell.selected{background:rgba(240,180,41,.55)!important;border:2px solid #F0B429!important;color:#F0B429!important;z-index:6;box-shadow:0 0 10px rgba(240,180,41,.5);}
+.grid-cell.foul-bet{background:rgba(255,45,85,.5)!important;border:2px solid #FF2D55!important;color:#FF2D55!important;box-shadow:0 0 10px rgba(255,45,85,.45);}
+.grid-cell.result-land{background:rgba(0,230,118,.75)!important;border:2.5px solid #00E676!important;animation:land .5s ease;z-index:15;}
+@keyframes land{0%{transform:scale(1.4);opacity:.3}100%{transform:scale(1);opacity:1}}
+.mult-badge{position:absolute;top:1px;right:2px;font-size:6px;color:rgba(255,255,255,.55);pointer-events:none;line-height:1;font-family:'DM Mono',monospace;}
+.grid-cell.selected .mult-badge,.grid-cell.foul-bet .mult-badge{color:inherit;opacity:.9;}
+/* STRIKE ZONE */
+.sz-overlay{position:absolute;z-index:22;display:none;}
+.sz-cell{position:absolute;border:1.5px solid rgba(255,255,255,0.3);background:rgba(255,255,255,0.07);pointer-events:all;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;transition:background .1s,border-color .1s,box-shadow .1s;}
+.sz-cell:hover{background:rgba(255,255,255,.2)!important;border-color:rgba(255,255,255,.7)!important;}
+.sz-cell.chase{border:1.5px dashed rgba(255,160,30,0.35)!important;background:rgba(255,140,0,0.07)!important;}
+.sz-cell.chase:hover{background:rgba(255,160,30,.2)!important;border-color:rgba(255,160,30,.7)!important;}
+.sz-cell.sz-selected{background:rgba(0,229,255,.52)!important;border:2px solid #00E5FF!important;color:#00E5FF;box-shadow:0 0 12px rgba(0,229,255,.5);}
+.sz-cell.sz-hit{background:rgba(0,230,118,.72)!important;border:2.5px solid #00E676!important;animation:land .4s ease;}
+.sz-lbl{font-family:'Bebas Neue',sans-serif;font-size:7.5px;letter-spacing:.6px;color:rgba(255,255,255,.6);pointer-events:none;text-align:center;}
+.sz-mlt{font-family:'DM Mono',monospace;font-size:7px;color:rgba(255,255,255,.45);pointer-events:none;}
+.sz-cell.sz-selected .sz-lbl,.sz-cell.sz-selected .sz-mlt{color:#00E5FF;}
+.sz-border{position:absolute;z-index:21;border:1.5px solid rgba(255,255,255,0);pointer-events:none;border-radius:2px;transition:border-color .25s,box-shadow .25s;}
+.sz-border.on{border-color:rgba(255,255,255,.25);box-shadow:0 0 16px rgba(255,255,255,.07);}
+/* BALL */
+.ball{position:absolute;width:10px;height:10px;background:radial-gradient(circle at 35% 35%,#fff,#ddd);border-radius:50%;box-shadow:0 0 10px rgba(255,255,255,.95),0 0 28px rgba(255,255,255,.5);z-index:35;display:none;transform:translate(-50%,-50%);pointer-events:none;}
+.ball-trail{position:absolute;inset:0;z-index:34;pointer-events:none;}
+.foul-flash{position:absolute;inset:0;background:rgba(255,45,85,.15);pointer-events:none;z-index:36;opacity:0;transition:opacity .2s;}
+.foul-flash.show{opacity:1;}
+/* HUD */
+.live-badge{position:absolute;top:10px;left:12px;z-index:40;display:flex;align-items:center;gap:6px;background:rgba(0,0,0,.72);border:1px solid rgba(255,255,255,.12);border-radius:4px;padding:3px 8px;font-family:'DM Mono',monospace;font-size:10px;color:#aaa;letter-spacing:1px;}
+.live-dot{width:7px;height:7px;border-radius:50%;background:var(--red);box-shadow:0 0 8px var(--red);animation:blink 1.2s infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
 .live-badge strong{color:#fff;font-size:11px;}
-
-/* Scoreboard overlay (top right) */
-.score-bug{
-  position:absolute;
-  top:10px;right:12px;
-  z-index:20;
-  background:rgba(0,0,0,0.82);
-  border:1px solid rgba(255,255,255,0.1);
-  border-radius:4px;
-  padding:4px 10px;
-  font-family:'DM Mono',monospace;
-  font-size:10px;
-  color:#ccc;
-  text-align:right;
-}
-.score-bug .teams{display:flex;flex-direction:column;gap:1px;}
+.score-bug{position:absolute;top:10px;right:12px;z-index:40;background:rgba(0,0,0,.84);border:1px solid rgba(255,255,255,.1);border-radius:4px;padding:4px 10px;font-family:'DM Mono',monospace;font-size:10px;color:#ccc;text-align:right;}
 .score-bug .team-row{display:flex;justify-content:space-between;gap:16px;}
 .score-bug .team-row.active{color:#fff;}
 .score-bug .score{color:var(--gold);}
 .score-bug .inn{font-size:9px;color:#666;margin-top:2px;text-align:center;}
-
-/* Count/pitch HUD */
-.pitch-hud{
-  position:absolute;
-  bottom:8px;left:12px;
-  z-index:20;
-  background:rgba(0,0,0,0.8);
-  border:1px solid rgba(255,255,255,0.08);
-  border-radius:4px;
-  padding:4px 10px;
-  display:flex;gap:12px;
-  font-family:'DM Mono',monospace;
-  font-size:9px;
-  color:#777;
-  letter-spacing:0.5px;
-}
-.pitch-hud span{color:#bbb;}
-.pitch-hud strong{color:var(--gold);}
-
-/* ── GRID OVERLAY ── */
-.grid-overlay{
-  position:absolute;
-  inset:0;
-  z-index:10;
-  pointer-events:none;
-}
-.grid-cell{
-  position:absolute;
-  border:1px solid rgba(255,255,255,0.06);
-  pointer-events:all;
-  cursor:pointer;
-  transition:background 0.1s,border-color 0.1s;
-  display:flex;align-items:center;justify-content:center;
-  font-family:'DM Mono',monospace;
-  font-size:7px;
-  color:rgba(255,255,255,0.25);
-  letter-spacing:0.3px;
-}
-.grid-cell:hover{
-  background:rgba(255,255,255,0.07)!important;
-  border-color:rgba(255,255,255,0.2)!important;
-  z-index:5;
-}
-.grid-cell.hot{
-  background:var(--hot);
-  border-color:rgba(255,125,0,0.2);
-}
-.grid-cell.selected{
-  background:var(--sel)!important;
-  border:1.5px solid var(--sel-b)!important;
-  color:var(--gold)!important;
-  z-index:6;
-  box-shadow:inset 0 0 6px rgba(240,180,41,0.25);
-}
-/* Parlay chain styling — sequential colors */
-.grid-cell.parlay-0{ background:rgba(0,229,255,0.38)!important; border:1.5px solid #00E5FF!important; color:#00E5FF!important; }
-.grid-cell.parlay-1{ background:rgba(0,230,118,0.38)!important; border:1.5px solid #00E676!important; color:#00E676!important; }
-.grid-cell.parlay-2{ background:rgba(255,125,0,0.38)!important; border:1.5px solid #FF7D00!important; color:#FF7D00!important; }
-.grid-cell.parlay-3{ background:rgba(240,180,41,0.38)!important; border:1.5px solid #F0B429!important; color:#F0B429!important; }
-.grid-cell.parlay-4{ background:rgba(255,45,85,0.38)!important;  border:1.5px solid #FF2D55!important; color:#FF2D55!important; }
-.grid-cell.foul-bet{
-  background:var(--foul-col)!important;
-  border:1.5px solid var(--foul-b)!important;
-  color:var(--red)!important;
-}
-.grid-cell.result-land{
-  background:rgba(0,230,118,0.65)!important;
-  border:2px solid #00E676!important;
-  animation:land 0.5s ease;
-  z-index:15;
-}
-@keyframes land{0%{transform:scale(1.3);opacity:0.5}100%{transform:scale(1);opacity:1}}
-
-.mult-badge{
-  position:absolute;
-  top:1px;right:2px;
-  font-size:6px;
-  color:rgba(255,255,255,0.3);
-  pointer-events:none;
-  line-height:1;
-  font-family:'DM Mono',monospace;
-}
-.grid-cell.selected .mult-badge,
-.grid-cell.parlay-0 .mult-badge,
-.grid-cell.parlay-1 .mult-badge,
-.grid-cell.parlay-2 .mult-badge,
-.grid-cell.parlay-3 .mult-badge,
-.grid-cell.parlay-4 .mult-badge
-{color:inherit;opacity:0.8;}
-
-/* Parlay chain number label */
-.chain-num{
-  font-family:'Bebas Neue',sans-serif;
-  font-size:11px;
-  pointer-events:none;
-  line-height:1;
-}
-
-/* Ball */
-.ball{
-  position:absolute;
-  width:10px;height:10px;
-  background:radial-gradient(circle at 35% 35%,#fff,#ddd);
-  border-radius:50%;
-  box-shadow:0 0 10px rgba(255,255,255,0.9),0 0 24px rgba(255,255,255,0.4);
-  z-index:25;
-  display:none;
-  transform:translate(-50%,-50%);
-  pointer-events:none;
-}
-
-/* Foul line flash */
-.foul-flash{
-  position:absolute;
-  top:0;left:0;right:0;bottom:0;
-  background:rgba(255,45,85,0.12);
-  pointer-events:none;
-  z-index:30;
-  opacity:0;
-  transition:opacity 0.2s;
-}
-.foul-flash.show{opacity:1;}
-
-/* ── BOTTOM PANEL ── */
-.bottom-panel{
-  width:100%;
-  max-width:540px;
-  background:var(--panel);
-  border-top:1px solid rgba(240,180,41,0.15);
-  padding:8px 12px 10px;
-  display:flex;
-  flex-direction:column;
-  gap:7px;
-  flex-shrink:0;
-}
-
-/* Mode tabs */
-.mode-tabs{
-  display:flex;gap:5px;
-}
-.mode-tab{
-  flex:1;
-  font-family:'Bebas Neue',sans-serif;
-  font-size:14px;
-  letter-spacing:1.5px;
-  padding:6px 4px;
-  border-radius:5px;
-  border:1px solid rgba(255,255,255,0.1);
-  background:transparent;
-  color:#666;
-  cursor:pointer;
-  transition:all 0.15s;
-  text-align:center;
-}
-.mode-tab.active-normal{ background:rgba(240,180,41,0.15); border-color:var(--gold); color:var(--gold); }
-.mode-tab.active-parlay{ background:rgba(0,229,255,0.15); border-color:var(--cyan); color:var(--cyan); }
-.mode-tab.active-foul  { background:rgba(255,45,85,0.15);  border-color:var(--red);  color:var(--red);  }
-
-/* Mode description */
-.mode-desc{
-  font-size:11px;
-  color:#555;
-  letter-spacing:0.3px;
-  line-height:1.4;
-  padding:0 2px;
-  min-height:28px;
-}
-.mode-desc strong{color:#888;}
-
-/* Stake + action row */
-.action-row{
-  display:flex;align-items:center;gap:6px;
-}
-.stake-group{display:flex;gap:4px;}
-.stkb{
-  font-family:'Bebas Neue',sans-serif;
-  font-size:13px;
-  letter-spacing:1px;
-  padding:5px 8px;
-  border-radius:4px;
-  border:1px solid rgba(255,255,255,0.1);
-  background:rgba(255,255,255,0.04);
-  color:#777;
-  cursor:pointer;
-  transition:all 0.12s;
-}
-.stkb:hover{background:rgba(255,255,255,0.08);}
-.stkb.on-normal{background:rgba(240,180,41,0.2);border-color:var(--gold);color:var(--gold);}
-.stkb.on-parlay{background:rgba(0,229,255,0.2);border-color:var(--cyan);color:var(--cyan);}
-.stkb.on-foul  {background:rgba(255,45,85,0.2); border-color:var(--red); color:var(--red);}
-
-.bet-info{
-  flex:1;
-  font-family:'DM Mono',monospace;
-  font-size:10px;
-  color:#555;
-  text-align:center;
-}
-.bet-info strong{font-size:13px;}
-.bet-info .gold{color:var(--gold);}
-.bet-info .cyan{color:var(--cyan);}
-.bet-info .red {color:var(--red);}
-
-.pitch-btn{
-  font-family:'Bebas Neue',sans-serif;
-  font-size:18px;
-  letter-spacing:2px;
-  padding:8px 18px;
-  border:none;border-radius:5px;
-  cursor:pointer;
-  transition:all 0.15s;
-  white-space:nowrap;
-  flex-shrink:0;
-}
-.pitch-btn.mode-normal{background:linear-gradient(135deg,#F0B429,#FF7D00);color:#060608;box-shadow:0 3px 16px rgba(240,180,41,0.35);}
-.pitch-btn.mode-parlay{background:linear-gradient(135deg,#00E5FF,#0090FF);color:#060608;box-shadow:0 3px 16px rgba(0,229,255,0.35);}
-.pitch-btn.mode-foul  {background:linear-gradient(135deg,#FF2D55,#FF7D00);color:#fff;box-shadow:0 3px 16px rgba(255,45,85,0.35);}
-.pitch-btn:hover{transform:scale(1.04);}
-.pitch-btn:disabled{opacity:0.35;cursor:default;transform:none;}
-
-.clear-btn{
-  font-family:'Bebas Neue',sans-serif;
-  font-size:13px;letter-spacing:1px;
-  padding:8px 10px;
-  background:transparent;
-  border:1px solid rgba(255,80,80,0.25);
-  border-radius:5px;
-  color:rgba(255,80,80,0.6);
-  cursor:pointer;
-  transition:all 0.12s;
-}
-.clear-btn:hover{background:rgba(255,80,80,0.1);border-color:#FF5050;color:#FF5050;}
-
-/* Parlay chain display */
-.parlay-chain{
-  display:flex;
-  align-items:center;
-  gap:4px;
-  min-height:22px;
-  overflow-x:auto;
-  scrollbar-width:none;
-  padding:0 2px;
-}
-.parlay-chain::-webkit-scrollbar{display:none;}
-.chain-step{
-  display:flex;align-items:center;gap:3px;
-  font-family:'DM Mono',monospace;
-  font-size:9px;
-  padding:2px 6px;
-  border-radius:3px;
-  flex-shrink:0;
-  white-space:nowrap;
-}
-.chain-arrow{color:#333;font-size:10px;flex-shrink:0;}
-.chain-mult{
-  font-family:'Bebas Neue',sans-serif;
-  font-size:13px;
-  color:var(--cyan);
-  margin-left:auto;
-  flex-shrink:0;
-}
-
-/* Result overlay */
-.result-overlay{
-  position:absolute;
-  inset:0;
-  background:rgba(0,0,0,0.8);
-  display:none;
-  align-items:center;
-  justify-content:center;
-  z-index:50;
-  flex-direction:column;
-}
-.result-overlay.show{display:flex;animation:fadeIn 0.25s ease;}
+.pitch-hud{position:absolute;bottom:8px;left:12px;z-index:40;background:rgba(0,0,0,.8);border:1px solid rgba(255,255,255,.08);border-radius:4px;padding:4px 10px;display:flex;gap:12px;font-family:'DM Mono',monospace;font-size:9px;color:#777;}
+.pitch-hud span{color:#bbb;}.pitch-hud strong{color:var(--gold);}
+/* RESULT */
+.result-overlay{position:absolute;inset:0;background:rgba(0,0,0,.86);display:none;align-items:center;justify-content:center;z-index:50;}
+.result-overlay.show{display:flex;animation:fadeIn .22s ease;}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
-.result-box{
-  text-align:center;
-  padding:20px 28px 18px;
-  border-radius:8px;
-  max-width:280px;
-  width:90%;
-}
-.result-box.win{ background:rgba(0,20,10,0.97); border:1.5px solid var(--green); }
-.result-box.loss{background:rgba(20,0,6,0.97);  border:1.5px solid var(--red);   }
-.result-box.foul-yes{background:rgba(20,0,6,0.97);  border:1.5px solid var(--red);  }
-.r-title{
-  font-family:'Bebas Neue',sans-serif;
-  font-size:46px;letter-spacing:3px;line-height:1;
-}
-.win .r-title{color:var(--green);text-shadow:0 0 28px rgba(0,230,118,0.6);}
-.loss .r-title{color:var(--red);text-shadow:0 0 28px rgba(255,45,85,0.5);}
-.foul-yes .r-title{color:var(--red);}
-.r-amount{font-family:'DM Mono',monospace;font-size:20px;color:var(--gold);margin-top:4px;}
-.r-detail{font-size:12px;color:#666;margin-top:6px;line-height:1.5;letter-spacing:0.3px;}
+.result-box{text-align:center;padding:22px 28px 18px;border-radius:10px;max-width:290px;width:90%;}
+.result-box.win{background:rgba(0,18,6,.97);border:1.5px solid var(--green);}
+.result-box.loss{background:rgba(18,0,5,.97);border:1.5px solid var(--red);}
+.result-box.foul-yes{background:rgba(18,0,8,.97);border:1.5px solid var(--red);}
+.r-title{font-family:'Bebas Neue',sans-serif;font-size:44px;letter-spacing:3px;line-height:1;}
+.win .r-title{color:var(--green);text-shadow:0 0 24px rgba(0,230,118,.6);}
+.loss .r-title,.foul-yes .r-title{color:var(--red);text-shadow:0 0 24px rgba(255,45,85,.5);}
+.r-amount{font-family:'DM Mono',monospace;font-size:22px;color:var(--gold);margin-top:4px;}
+.r-detail{font-size:11px;color:#666;margin-top:6px;line-height:1.5;}
 .r-detail strong{color:#999;}
-
-/* Parlay breakdown in result */
-.parlay-result-chain{
-  margin:8px 0 4px;
-  display:flex;flex-direction:column;gap:3px;
-}
-.prc-step{
-  display:flex;justify-content:space-between;
-  font-family:'DM Mono',monospace;
-  font-size:9px;
-  color:#555;
-  padding:2px 6px;
-  border-radius:3px;
-  background:rgba(255,255,255,0.04);
-}
-.prc-step.hit-leg{color:var(--green);}
-.prc-step.miss-leg{color:var(--red);}
-
-.next-btn{
-  margin-top:14px;
-  font-family:'Bebas Neue',sans-serif;
-  font-size:17px;letter-spacing:2px;
-  padding:9px 28px;
-  background:var(--gold);
-  border:none;border-radius:5px;
-  color:#060608;cursor:pointer;
-  transition:all 0.15s;
-  display:inline-block;
-}
+.next-btn{margin-top:14px;font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:2px;padding:9px 26px;background:var(--gold);border:none;border-radius:5px;color:#060608;cursor:pointer;}
 .next-btn:hover{transform:scale(1.04);}
-
-/* Balance bar */
-.balance-bar{
-  display:flex;justify-content:space-between;align-items:center;
-}
-.bal-label{font-family:'DM Mono',monospace;font-size:9px;color:#444;letter-spacing:1px;}
-.bal-val{font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--gold);letter-spacing:1px;}
-
-/* Foul zone edge highlights */
-.foul-edge{
-  position:absolute;
-  top:0;bottom:0;
-  width:40px;
-  pointer-events:none;
-  z-index:3;
-}
-.foul-edge.left{ left:0; background:linear-gradient(90deg,rgba(255,45,85,0.06),transparent); }
-.foul-edge.right{right:0;background:linear-gradient(270deg,rgba(255,45,85,0.06),transparent);}
-
-/* Parlay info tooltip */
-.parlay-info{
-  position:absolute;
-  top:50%;left:50%;
-  transform:translate(-50%,-50%);
-  background:rgba(0,0,0,0.92);
-  border:1px solid rgba(0,229,255,0.3);
-  border-radius:8px;
-  padding:16px 20px;
-  z-index:40;
-  max-width:280px;
-  width:88%;
-  display:none;
-}
-.parlay-info.show{display:block;animation:fadeIn 0.2s ease;}
-.pi-title{font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--cyan);letter-spacing:2px;margin-bottom:8px;}
-.pi-body{font-size:11px;color:#888;line-height:1.6;letter-spacing:0.2px;}
-.pi-body strong{color:#bbb;}
-.pi-example{
-  margin-top:10px;
-  padding:8px;
-  background:rgba(0,229,255,0.05);
-  border-left:2px solid var(--cyan);
-  border-radius:0 4px 4px 0;
-  font-family:'DM Mono',monospace;
-  font-size:9px;
-  color:#777;
-  line-height:1.7;
-}
-.pi-example strong{color:var(--cyan);}
-.pi-close{
-  margin-top:12px;
-  font-family:'Bebas Neue',sans-serif;
-  font-size:14px;letter-spacing:1px;
-  padding:6px 16px;
-  background:rgba(0,229,255,0.12);
-  border:1px solid rgba(0,229,255,0.3);
-  border-radius:4px;
-  color:var(--cyan);cursor:pointer;
-  transition:all 0.12s;
-  width:100%;
-}
-.pi-close:hover{background:rgba(0,229,255,0.22);}
+/* BOTTOM */
+.bottom-panel{width:100%;max-width:540px;background:var(--panel);border-top:1px solid rgba(240,180,41,.15);padding:8px 12px 10px;display:flex;flex-direction:column;gap:7px;flex-shrink:0;}
+.balance-bar{display:flex;justify-content:space-between;align-items:center;}
+.bal-label{font-family:'DM Mono',monospace;font-size:9px;color:#2a2a40;letter-spacing:1.5px;}
+.bal-val{font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--gold);}
+.mode-tabs{display:flex;gap:5px;}
+.mode-tab{flex:1;font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:1.5px;padding:6px 4px;border-radius:5px;border:1px solid rgba(255,255,255,.1);background:transparent;color:#555;cursor:pointer;transition:all .15s;text-align:center;}
+.mode-tab.active-normal{background:rgba(240,180,41,.15);border-color:var(--gold);color:var(--gold);}
+.mode-tab.active-strike{background:rgba(0,229,255,.15);border-color:var(--cyan);color:var(--cyan);}
+.mode-tab.active-foul{background:rgba(255,45,85,.15);border-color:var(--red);color:var(--red);}
+.mode-desc{font-size:11px;color:#555;line-height:1.4;padding:0 2px;min-height:28px;}
+.mode-desc strong{color:#888;}
+.action-row{display:flex;align-items:center;gap:6px;}
+.stake-group{display:flex;gap:4px;}
+.stkb{font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:1px;padding:5px 8px;border-radius:4px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);color:#777;cursor:pointer;transition:all .12s;}
+.stkb:hover{background:rgba(255,255,255,.08);}
+.stkb.on-normal{background:rgba(240,180,41,.2);border-color:var(--gold);color:var(--gold);}
+.stkb.on-strike{background:rgba(0,229,255,.2);border-color:var(--cyan);color:var(--cyan);}
+.stkb.on-foul{background:rgba(255,45,85,.2);border-color:var(--red);color:var(--red);}
+.bet-info{flex:1;font-family:'DM Mono',monospace;font-size:10px;color:#555;text-align:center;}
+.gold{color:var(--gold);}.cyan{color:var(--cyan);}.red{color:var(--red);}
+.clear-btn{font-family:'Bebas Neue',sans-serif;font-size:13px;padding:7px 10px;background:transparent;border:1px solid rgba(255,80,80,.22);border-radius:5px;color:rgba(255,80,80,.55);cursor:pointer;transition:all .12s;}
+.clear-btn:hover{background:rgba(255,80,80,.1);color:#FF5050;border-color:#FF5050;}
+.pitch-btn{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;padding:8px 18px;border:none;border-radius:5px;cursor:pointer;transition:all .15s;white-space:nowrap;flex-shrink:0;}
+.pitch-btn.mode-normal{background:linear-gradient(135deg,#F0B429,#FF7D00);color:#060608;box-shadow:0 3px 16px rgba(240,180,41,.35);}
+.pitch-btn.mode-strike{background:linear-gradient(135deg,#00E5FF,#0090FF);color:#060608;box-shadow:0 3px 16px rgba(0,229,255,.35);}
+.pitch-btn.mode-foul{background:linear-gradient(135deg,#FF2D55,#FF7D00);color:#fff;box-shadow:0 3px 16px rgba(255,45,85,.35);}
+.pitch-btn:hover{transform:scale(1.04);}
+.pitch-btn:disabled{opacity:.35;cursor:default;transform:none;}
 </style>
 </head>
 <body>
-
 <div class="live-feed" id="liveFeed">
-
-  <!-- Broadcast background -->
-  <div class="broadcast-bg">
-    <!-- SVG field (bottom portion — as if camera is behind batter/pitcher's mound level) -->
-    <svg class="field-svg" viewBox="0 0 540 260" xmlns="http://www.w3.org/2000/svg" height="260">
-      <defs>
-        <radialGradient id="fg" cx="50%" cy="100%" r="80%">
-          <stop offset="0%" stop-color="#3a7a1a"/>
-          <stop offset="55%" stop-color="#2a5a10"/>
-          <stop offset="100%" stop-color="#1a3a08"/>
-        </radialGradient>
-        <radialGradient id="dg" cx="50%" cy="80%" r="55%">
-          <stop offset="0%" stop-color="#9a7820"/>
-          <stop offset="100%" stop-color="#6a4e0e"/>
-        </radialGradient>
-        <linearGradient id="wallGrad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stop-color="#1a2a4a"/>
-          <stop offset="100%" stop-color="#0d1a30"/>
-        </linearGradient>
-        <filter id="blur2"><feGaussianBlur stdDeviation="1.5"/></filter>
-      </defs>
-
-      <!-- Sky already from CSS bg -->
-
-      <!-- Outfield wall arc -->
-      <path d="M-10 80 Q270 -20 550 80 L550 110 Q270 10 -10 110 Z" fill="url(#wallGrad)" opacity="0.9"/>
-
-      <!-- Warning track -->
-      <path d="M-10 110 Q270 10 550 110 L550 130 Q270 32 -10 130 Z" fill="#8B6914" opacity="0.5"/>
-
-      <!-- Outfield grass -->
-      <path d="M-10 130 Q270 32 550 130 L550 260 L-10 260 Z" fill="url(#fg)"/>
-
-      <!-- Mowing stripes -->
-      <path d="M-10 148 Q270 50 550 148 L550 162 Q270 64 -10 162 Z" fill="rgba(0,0,0,0.07)"/>
-      <path d="M-10 178 Q270 80 550 178 L550 192 Q270 94 -10 192 Z" fill="rgba(0,0,0,0.07)"/>
-      <path d="M-10 208 Q270 110 550 208 L550 222 Q270 124 -10 222 Z" fill="rgba(0,0,0,0.07)"/>
-      <path d="M-10 238 Q270 140 550 238 L550 252 Q270 154 -10 252 Z" fill="rgba(0,0,0,0.07)"/>
-
-      <!-- Infield dirt -->
-      <ellipse cx="270" cy="280" rx="210" ry="130" fill="url(#dg)" opacity="0.75"/>
-
-      <!-- Infield grass -->
-      <polygon points="270,195 195,248 270,295 345,248" fill="#2a5a10" opacity="0.9"/>
-
-      <!-- Pitcher mound -->
-      <ellipse cx="270" cy="248" rx="18" ry="11" fill="#a08020" opacity="0.7"/>
-      <ellipse cx="270" cy="248" rx="11" ry="7" fill="#b89028" opacity="0.8"/>
-
-      <!-- Bases -->
-      <rect x="260" y="190" width="20" height="13" rx="2" fill="white" opacity="0.9"/>
-      <rect x="185" y="241" width="17" height="12" rx="2" fill="white" opacity="0.9"/>
-      <rect x="338" y="241" width="17" height="12" rx="2" fill="white" opacity="0.9"/>
-
-      <!-- Basepaths -->
-      <line x1="270" y1="258" x2="190" y2="248" stroke="#9a7820" stroke-width="2.5" opacity="0.5"/>
-      <line x1="270" y1="258" x2="350" y2="248" stroke="#9a7820" stroke-width="2.5" opacity="0.5"/>
-      <line x1="190" y1="248" x2="270" y2="196" stroke="#9a7820" stroke-width="2.5" opacity="0.5"/>
-      <line x1="350" y1="248" x2="270" y2="196" stroke="#9a7820" stroke-width="2.5" opacity="0.5"/>
-
-      <!-- Foul lines -->
-      <line x1="270" y1="260" x2="-10" y2="60" stroke="rgba(255,255,255,0.2)" stroke-width="1.5"/>
-      <line x1="270" y1="260" x2="550" y2="60" stroke="rgba(255,255,255,0.2)" stroke-width="1.5"/>
-
-      <!-- Foul poles -->
-      <line x1="-5" y1="20" x2="-5" y2="115" stroke="#F0B429" stroke-width="3" opacity="0.7"/>
-      <line x1="545" y1="20" x2="545" y2="115" stroke="#F0B429" stroke-width="3" opacity="0.7"/>
-
-      <!-- Distance markers -->
-      <text x="55" y="92" font-family="'Bebas Neue',sans-serif" font-size="11" fill="rgba(255,255,255,0.25)">330</text>
-      <text x="485" y="92" font-family="'Bebas Neue',sans-serif" font-size="11" fill="rgba(255,255,255,0.25)">330</text>
-      <text x="270" y="28" font-family="'Bebas Neue',sans-serif" font-size="11" fill="rgba(255,255,255,0.25)" text-anchor="middle">404</text>
-
-      <!-- Scoreboard -->
-      <rect x="222" y="4" width="96" height="38" rx="4" fill="rgba(0,0,0,0.85)" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
-      <text x="270" y="18" font-family="'Bebas Neue',sans-serif" font-size="9" fill="#F0B429" text-anchor="middle" letter-spacing="2">TOUCH GRASS</text>
-      <text x="270" y="30" font-family="'DM Mono',monospace" font-size="8" fill="#999" text-anchor="middle">NYY 3  BOS 2  7th</text>
-      <text x="270" y="40" font-family="'DM Mono',monospace" font-size="7" fill="#666" text-anchor="middle">2 OUT · 1-2 COUNT</text>
-
-      <!-- Stadium light poles -->
-      <line x1="50" y1="0" x2="45" y2="50" stroke="#334" stroke-width="2"/>
-      <line x1="490" y1="0" x2="495" y2="50" stroke="#334" stroke-width="2"/>
-      <circle cx="50" cy="0" r="5" fill="#fffbcc" opacity="0.85"/>
-      <circle cx="490" cy="0" r="5" fill="#fffbcc" opacity="0.85"/>
-    </svg>
+  <div class="stadium-sky"></div>
+  <div class="upper-deck">
+    <div class="ud-left"><div class="ud-seats"></div><div class="crowd"></div></div>
+    <div class="ud-right"><div class="ud-seats"></div><div class="crowd"></div></div>
+    <div class="ud-center"><div class="ud-seats"></div></div>
   </div>
-
-  <!-- Foul zone edge glow -->
-  <div class="foul-edge left"></div>
-  <div class="foul-edge right"></div>
-
-  <!-- Live badge -->
-  <div class="live-badge">
-    <div class="live-dot"></div>
-    <strong>LIVE</strong> NYY vs BOS · CH4
+  <div class="stadium-lights"></div><div class="light-spill"></div>
+  <div class="lower-deck">
+    <div class="ld-left"><div class="ld-seats"></div><div class="ld-crowd"></div></div>
+    <div class="ld-right"><div class="ld-seats"></div><div class="ld-crowd"></div></div>
   </div>
-
-
-  <!-- Grid -->
+  <div class="of-wall"><div class="wall-text"><span>330</span><span>LEFT</span><span>CENTER 405</span><span>RIGHT</span><span>330</span></div></div>
+  <div class="of-grass"></div>
+  <div class="infield-dirt"></div>
+  <div class="infield-grass"></div>
+  <div class="pitchers-mound"></div>
+  <div class="pitcher"></div>
+  <div class="foul-line-left"></div><div class="foul-line-right"></div>
+  <div class="batter-box"></div>
+  <div class="home-plate"></div>
+  <div class="scanlines"></div><div class="vignette"></div>
   <div class="grid-overlay" id="gridOverlay"></div>
-
-  <!-- Ball -->
+  <div class="sz-border" id="szBorder"></div>
+  <div class="sz-overlay" id="szOverlay"></div>
+  <canvas class="ball-trail" id="ballTrail"></canvas>
   <div class="ball" id="ball"></div>
-
-  <!-- Foul flash -->
   <div class="foul-flash" id="foulFlash"></div>
-
-  <!-- Result overlay -->
+  <div class="live-badge"><div class="live-dot"></div><strong>LIVE</strong>&nbsp;WSB &middot; NYY vs BOS</div>
+  <div class="score-bug">
+    <div class="team-row active"><span>NYY</span><span class="score">3</span></div>
+    <div class="team-row"><span>BOS</span><span class="score">2</span></div>
+    <div class="inn">&#9650; 7th &middot; 2 out &middot; 1-2</div>
+  </div>
+  <div class="pitch-hud">
+    <span>PITCHER <strong>HERNANDEZ</strong></span>
+    <span>BATTER <strong>JUDGE</strong></span>
+    <span>NEXT <strong id="pitchTypeHud">SLIDER</strong></span>
+  </div>
   <div class="result-overlay" id="resultOverlay">
     <div class="result-box" id="resultBox">
-      <div class="r-title" id="rTitle">WIN!</div>
-      <div class="r-amount" id="rAmount">+$0.00</div>
-      <div class="parlay-result-chain" id="parlayResultChain"></div>
+      <div class="r-title" id="rTitle"></div>
+      <div class="r-amount" id="rAmount"></div>
       <div class="r-detail" id="rDetail"></div>
-      <button class="next-btn" onclick="nextPitch()">NEXT PITCH →</button>
+      <button class="next-btn" onclick="nextPitch()">NEXT PITCH &rarr;</button>
     </div>
-  </div>
-
-  <!-- Parlay info panel -->
-  <div class="parlay-info" id="parlayInfo">
-    <div class="pi-title">⛓ PARLAY CHAIN</div>
-    <div class="pi-body">
-      Select <strong>2–5 squares</strong> in sequence. The ball must land in <strong>each square one after another</strong> across consecutive pitches to win.<br><br>
-      Each leg multiplies the last. Miss any leg and the chain <strong>breaks</strong> — but you keep any partial payout up to that point if you enabled <strong>Cash Out</strong>.<br><br>
-      The chain order is fixed when you lock it in. Squares light up <strong>cyan → green → orange → gold → red</strong> for legs 1–5.
-    </div>
-    <div class="pi-example">
-      <strong>Example — 3-leg parlay:</strong><br>
-      Leg 1: Left Field 3.0x → <strong>HIT ✓</strong><br>
-      Leg 2: Center Field 2.5x → <strong>HIT ✓</strong><br>
-      Leg 3: Stands 8.0x → <strong>HIT ✓</strong><br>
-      $2 stake × 3.0 × 2.5 × 8.0 = <strong style="color:#00E5FF">$120.00</strong>
-    </div>
-    <button class="pi-close" onclick="closeInfo()">GOT IT</button>
   </div>
 </div>
 
-<!-- BOTTOM PANEL -->
 <div class="bottom-panel">
   <div class="balance-bar">
     <span class="bal-label">BALANCE</span>
     <span class="bal-val" id="balVal">$247.50</span>
   </div>
-
-  <!-- Mode tabs -->
   <div class="mode-tabs">
-    <button class="mode-tab active-normal" id="tabNormal" onclick="setMode('normal')">⚾ LAND</button>
-    <button class="mode-tab" id="tabParlay" onclick="setMode('parlay')">⛓ PARLAY <span style="font-size:10px;opacity:0.7">(?)</span></button>
-    <button class="mode-tab" id="tabFoul" onclick="setMode('foul')">⚡ FOUL</button>
+    <button class="mode-tab active-normal" id="tabNormal" onclick="setMode('normal')">&#x26BE; LAND</button>
+    <button class="mode-tab" id="tabStrike" onclick="setMode('strike')">&#9733; STRIKE</button>
+    <button class="mode-tab" id="tabFoul" onclick="setMode('foul')">&#x26A1; FOUL</button>
   </div>
-
-  <!-- Mode description -->
-  <div class="mode-desc" id="modeDesc">
-    Tap squares to bet where the ball <strong>lands</strong>. Select multiple squares at your stake each. Higher odds toward the walls and stands.
-  </div>
-
-  <!-- Parlay chain display (hidden unless parlay mode) -->
-  <div class="parlay-chain" id="parlayChain" style="display:none;"></div>
-
-  <!-- Action row -->
+  <div class="mode-desc" id="modeDesc">Tap squares to bet where the ball <strong>lands</strong>. Higher odds at walls, stands &amp; foul poles.</div>
   <div class="action-row">
-    <div class="stake-group" id="stakeGroup">
+    <div class="stake-group">
       <button class="stkb on-normal" data-v="1"  onclick="setStake(1,this)">$1</button>
       <button class="stkb"           data-v="2"  onclick="setStake(2,this)">$2</button>
       <button class="stkb"           data-v="5"  onclick="setStake(5,this)">$5</button>
       <button class="stkb"           data-v="10" onclick="setStake(10,this)">$10</button>
     </div>
-    <div class="bet-info" id="betInfo">
-      <div><span id="selLabel" class="gold">0 sel</span> · TOTAL: <strong id="totalBet" class="gold">$0.00</strong></div>
-      <div id="parlayOddsLine" style="display:none;font-size:9px;color:#555;margin-top:1px;"></div>
+    <div class="bet-info">
+      <span id="selLabel" class="gold">0 sel</span> &middot; <strong id="totalBet" class="gold">$0.00</strong>
     </div>
-    <button class="clear-btn" onclick="clearAll()">✕</button>
+    <button class="clear-btn" onclick="clearAll()">&#x2715;</button>
     <button class="pitch-btn mode-normal" id="pitchBtn" onclick="throwPitch()" disabled>PITCH</button>
   </div>
 </div>
 
 <script>
-// ─────────────────────────────────────────────────
-// CONFIG
-const COLS = 20, ROWS = 16;
-let mode = 'normal'; // 'normal' | 'parlay' | 'foul'
-let stake = 1;
-let balance = 247.50;
-let selected = new Set();   // normal mode selected ids
-let parlayChain = [];       // parlay mode — ordered list of cell ids
-let parlayLeg = 0;          // current active leg (for multi-pitch)
-let parlayActive = false;   // mid-parlay in progress
-let cells = [];             // DOM elements keyed by id
-let pitching = false;
+const COLS=20,ROWS=16;
+let mode='normal',stake=1,balance=247.50;
+let selected=new Set(),cells={},szCells={},pitching=false;
 
-// Zone definitions: rows/cols are 0-indexed fractions
-// Each zone: {rMin, rMax, cMin, cMax, label, mult, type}
-// type: 'stands','outfield','infield','foul','plate'
-function getZone(r, c) {
-  const rf = r / ROWS, cf = c / COLS;
-  const distC = Math.abs(cf - 0.5);
+const PITCH_TYPES=['FASTBALL','SLIDER','CURVEBALL','CHANGEUP','CUTTER','SINKER','2-SEAM'];
 
-  // Stands (top ~25% of screen, within foul lines)
-  if (rf < 0.25) {
-    if (distC > 0.42) return { label:'FOUL POLE', mult:12.0, type:'foul' };
-    return { label:'STANDS', mult:8.0, type:'stands' };
-  }
-  // Wall / warning track
-  if (rf < 0.35) {
-    if (distC > 0.38) return { label:'FOUL LINE', mult:6.0, type:'foul' };
-    if (distC > 0.28) return { label:'WALL', mult:5.5, type:'outfield' };
-    return { label:'DEEP CF', mult:4.5, type:'outfield' };
-  }
-  // Outfield
-  if (rf < 0.55) {
-    if (distC > 0.4) return { label:'FOUL', mult:5.0, type:'foul' };
-    if (distC > 0.3) return { label:'LF/RF', mult:3.0, type:'outfield' };
-    return { label:'CENTER', mult:2.5, type:'outfield' };
-  }
-  // Infield
-  if (rf < 0.78) {
-    if (distC > 0.38) return { label:'FOUL', mult:5.0, type:'foul' };
-    if (distC < 0.08) return { label:'MIDDLE', mult:1.8, type:'infield' };
-    return { label:'INFIELD', mult:1.5, type:'infield' };
-  }
-  // Near plate
-  if (distC > 0.32) return { label:'FOUL', mult:5.0, type:'foul' };
-  return { label:'INFIELD', mult:1.5, type:'infield' };
+// 3x3 strike zone + 4 chase zones
+const SZ=[
+  {id:'hi-in', lbl:'HIGH IN',   mult:3.5, r:0,c:0,chase:false},
+  {id:'hi-mid',lbl:'HIGH MID',  mult:2.5, r:0,c:1,chase:false},
+  {id:'hi-out',lbl:'HIGH OUT',  mult:3.5, r:0,c:2,chase:false},
+  {id:'mi-in', lbl:'MID IN',    mult:2.8, r:1,c:0,chase:false},
+  {id:'heart', lbl:'HEART',     mult:1.8, r:1,c:1,chase:false},
+  {id:'mi-out',lbl:'MID OUT',   mult:2.8, r:1,c:2,chase:false},
+  {id:'lo-in', lbl:'LOW IN',    mult:3.2, r:2,c:0,chase:false},
+  {id:'lo-mid',lbl:'LOW MID',   mult:2.2, r:2,c:1,chase:false},
+  {id:'lo-out',lbl:'LOW OUT',   mult:3.2, r:2,c:2,chase:false},
+  {id:'ch-in', lbl:'CHASE IN',  mult:5.0, r:1,c:-1,chase:true},
+  {id:'ch-out',lbl:'CHASE OUT', mult:5.0, r:1,c:3, chase:true},
+  {id:'ch-hi', lbl:'CHASE HI',  mult:5.0, r:-1,c:1,chase:true},
+  {id:'ch-lo', lbl:'CHASE LO',  mult:4.0, r:3, c:1,chase:true},
+];
+
+function getZone(r,c){
+  const rf=(r+.5)/ROWS,cf=(c+.5)/COLS,d=Math.abs(cf-.5);
+  if(rf<.25){if(d>.42)return{label:'FOUL POLE',mult:12,type:'foul'};return{label:'STANDS',mult:8,type:'stands'};}
+  if(rf<.35){if(d>.38)return{label:'FOUL LINE',mult:6,type:'foul'};if(d>.28)return{label:'WALL',mult:5.5,type:'outfield'};return{label:'DEEP CF',mult:4.5,type:'outfield'};}
+  if(rf<.55){if(d>.4)return{label:'FOUL',mult:5,type:'foul'};if(d>.3)return{label:'LF/RF',mult:3,type:'outfield'};return{label:'CENTER',mult:2.5,type:'outfield'};}
+  if(rf<.78){if(d>.38)return{label:'FOUL',mult:5,type:'foul'};if(d<.08)return{label:'MIDDLE',mult:1.8,type:'infield'};return{label:'INFIELD',mult:1.5,type:'infield'};}
+  if(d>.32)return{label:'FOUL',mult:5,type:'foul'};
+  return{label:'INFIELD',mult:1.5,type:'infield'};
 }
 
-// ─────────────────────────────────────────────────
-// BUILD GRID
-function buildGrid() {
-  const overlay = document.getElementById('gridOverlay');
-  const feed = document.getElementById('liveFeed');
-  const W = feed.offsetWidth  || 540;
-  const H = feed.offsetHeight || 340;
-  const cW = W / COLS, cH = H / ROWS;
+function buildGrid(){
+  const ol=document.getElementById('gridOverlay');
+  const feed=document.getElementById('liveFeed');
+  const W=feed.offsetWidth||540,H=feed.offsetHeight||380;
+  const cW=W/COLS,cH=H/ROWS;
+  ol.innerHTML='';cells={};szCells={};
 
-  overlay.innerHTML = '';
-  cells = {};
-
-  for (let r = 0; r < ROWS; r++) {
-    for (let c = 0; c < COLS; c++) {
-      // Mask: only show cells within the approximate V field shape
-      const rf = (r + 0.5) / ROWS;
-      const cf = (c + 0.5) / COLS;
-      const distC = Math.abs(cf - 0.5);
-      const maxDist = 0.5 * (1 - rf * 0.2); // slight taper
-      if (distC > maxDist) continue;
-
-      const zone = getZone(r, c);
-      const el = document.createElement('div');
-      el.className = 'grid-cell';
-      if (zone.type === 'foul') el.style.background = 'rgba(255,45,85,0.06)';
-      else if (zone.type === 'stands') el.style.background = 'rgba(255,125,0,0.05)';
-
-      el.style.cssText += `
-        left:${c*cW}px; top:${r*cH}px;
-        width:${cW}px; height:${cH}px;
-      `;
-
-      const badge = document.createElement('div');
-      badge.className = 'mult-badge';
-      badge.textContent = zone.mult.toFixed(1) + 'x';
-      el.appendChild(badge);
-
-      const id = `${r}-${c}`;
-      el.dataset.id = id;
-      el.dataset.row = r;
-      el.dataset.col = c;
-      el.dataset.mult = zone.mult;
-      el.dataset.label = zone.label;
-      el.dataset.type = zone.type;
-
-      el.addEventListener('click', () => onCellClick(el, id));
-      overlay.appendChild(el);
-      cells[id] = el;
+  // Field grid
+  for(let r=0;r<ROWS;r++){
+    for(let c=0;c<COLS;c++){
+      const rf=(r+.5)/ROWS,cf=(c+.5)/COLS,d=Math.abs(cf-.5);
+      if(d>.5*(1-rf*.18))continue;
+      const z=getZone(r,c);
+      const el=document.createElement('div');el.className='grid-cell';
+      if(z.type==='foul')el.style.background='rgba(255,45,85,0.12)';
+      else if(z.type==='stands')el.style.background='rgba(255,125,0,0.10)';
+      else if(z.type==='outfield')el.style.background='rgba(0,200,80,0.06)';
+      el.style.cssText+=`left:${c*cW}px;top:${r*cH}px;width:${cW}px;height:${cH}px;`;
+      const b=document.createElement('div');b.className='mult-badge';b.textContent=z.mult.toFixed(1)+'x';el.appendChild(b);
+      const id=r+'-'+c;el.dataset.id=id;el.dataset.row=r;el.dataset.col=c;el.dataset.mult=z.mult;el.dataset.label=z.label;el.dataset.type=z.type;
+      el.addEventListener('click',()=>onFieldClick(el,id));
+      ol.appendChild(el);cells[id]=el;
     }
   }
+
+  // Strike zone cells
+  const szW=cW*2.5,szH=cH*1.2;
+  const szLeft=(W-szW*3)/2,szTop=H*0.552;
+  const szOl=document.getElementById('szOverlay');
+  szOl.innerHTML='';szOl.style.cssText=`left:0;top:0;width:${W}px;height:${H}px;position:absolute;z-index:22;display:${mode==='strike'?'block':'none'};`;
+
+  SZ.forEach(s=>{
+    const el=document.createElement('div');
+    el.className='sz-cell'+(s.chase?' chase':'');
+    el.style.cssText=`left:${szLeft+s.c*szW}px;top:${szTop+s.r*szH}px;width:${szW}px;height:${szH}px;position:absolute;`;
+    const lb=document.createElement('div');lb.className='sz-lbl';lb.textContent=s.lbl;el.appendChild(lb);
+    const mt=document.createElement('div');mt.className='sz-mlt';mt.textContent=s.mult.toFixed(1)+'x';el.appendChild(mt);
+    el.dataset.id=s.id;el.dataset.mult=s.mult;el.dataset.label=s.lbl;el.dataset.chase=s.chase?'1':'0';
+    el.addEventListener('click',()=>onSzClick(el,s.id));
+    szOl.appendChild(el);szCells[s.id]=el;
+  });
+
+  // Strike zone border box
+  const border=document.getElementById('szBorder');
+  border.style.cssText=`left:${szLeft}px;top:${szTop}px;width:${szW*3}px;height:${szH*3}px;`;
+  border.className='sz-border'+(mode==='strike'?' on':'');
 }
 
-function onCellClick(el, id) {
-  if (pitching) return;
-  if (mode === 'parlay') {
-    if (parlayActive) return; // can't edit mid-parlay
-    const idx = parlayChain.indexOf(id);
-    if (idx !== -1) {
-      // Remove from chain
-      parlayChain.splice(idx, 1);
-    } else {
-      if (parlayChain.length >= 5) return;
-      parlayChain.push(id);
-    }
-    refreshParlayUI();
-  } else if (mode === 'foul') {
-    // Foul mode: only foul-type cells, single select
-    if (el.dataset.type !== 'foul') return;
-    if (selected.has(id)) {
-      selected.delete(id);
-      el.classList.remove('foul-bet');
-    } else {
-      selected.add(id);
-      el.classList.add('foul-bet');
-    }
-    updateUI();
+function onFieldClick(el,id){
+  if(pitching||mode==='strike')return;
+  if(mode==='foul'){
+    if(el.dataset.type!=='foul')return;
+    if(selected.has(id)){selected.delete(id);el.classList.remove('foul-bet');}
+    else{selected.add(id);el.classList.add('foul-bet');}
   } else {
-    // Normal
-    if (selected.has(id)) {
-      selected.delete(id);
-      el.classList.remove('selected');
-    } else {
-      selected.add(id);
-      el.classList.add('selected');
-    }
-    updateUI();
+    if(selected.has(id)){selected.delete(id);el.classList.remove('selected');}
+    else{selected.add(id);el.classList.add('selected');}
   }
+  updateUI();
 }
 
-// ─────────────────────────────────────────────────
-// MODE SWITCHING
-const modeDescs = {
-  normal: 'Tap squares to bet where the ball <strong>lands</strong>. Select multiple — each costs your stake. Higher odds at walls, stands & foul poles.',
-  parlay: 'Build a <strong>chain</strong> of 2–5 squares. Ball must land in each across <em>consecutive pitches</em>. Multipliers stack — massive payouts possible. <strong>Tap ⛓ PARLAY to see how it works.</strong>',
-  foul:   'Bet on a <strong>foul ball</strong> occurring. Red zones along the foul lines are active. Place your stake — if the next pitch results in a foul in your zone, you win. No foul = loss.'
+function onSzClick(el,id){
+  if(pitching||mode!=='strike')return;
+  if(selected.has(id)){selected.delete(id);el.classList.remove('sz-selected');}
+  else{selected.add(id);el.classList.add('sz-selected');}
+  updateUI();
+}
+
+const DESCS={
+  normal:'Tap squares to bet where the ball <strong>lands</strong>. Higher odds at the wall, stands & foul poles.',
+  strike:'Bet on a <strong>called strike</strong>. Pick zones in the strike box — <strong>HEART 1.8x</strong>, corners up to 3.5x, chase pitches 5x. ~72% strike rate inside, ~35% on chase.',
+  foul:'Bet on a <strong>foul ball</strong> — 30% chance. Pick red foul zones. If it fouls into your zone you win. No foul = loss.'
 };
 
-function setMode(m) {
-  if (pitching) return;
-  mode = m;
-  clearAll(true);
-
-  document.getElementById('tabNormal').className = 'mode-tab' + (m==='normal'?' active-normal':'');
-  document.getElementById('tabParlay').className = 'mode-tab' + (m==='parlay'?' active-parlay':'');
-  document.getElementById('tabFoul').className   = 'mode-tab' + (m==='foul'  ?' active-foul':'');
-
-  document.getElementById('modeDesc').innerHTML = modeDescs[m];
-  document.getElementById('parlayChain').style.display = m==='parlay' ? 'flex':'none';
-
-  const btn = document.getElementById('pitchBtn');
-  btn.className = 'pitch-btn mode-' + m;
-  btn.textContent = m==='foul' ? 'LOCK BET' : 'PITCH';
-
-  // Stake button colours
-  document.querySelectorAll('.stkb').forEach(b => {
-    b.className = 'stkb';
-    if (parseFloat(b.dataset.v) === stake) b.classList.add('on-'+m);
+function setMode(m){
+  if(pitching)return;mode=m;clearAll(true);
+  ['Normal','Strike','Foul'].forEach(n=>{
+    const t=document.getElementById('tab'+n);
+    if(t)t.className='mode-tab'+(m===n.toLowerCase()?' active-'+n.toLowerCase():'');
   });
-
-  // Show parlay info when switching to parlay
-  if (m==='parlay') {
-    setTimeout(() => document.getElementById('parlayInfo').classList.add('show'), 300);
-  }
-
+  document.getElementById('modeDesc').innerHTML=DESCS[m];
+  const btn=document.getElementById('pitchBtn');
+  btn.className='pitch-btn mode-'+m;
+  btn.textContent=m==='strike'?'WATCH PITCH':m==='foul'?'LOCK BET':'PITCH';
+  const show=m==='strike';
+  document.getElementById('szOverlay').style.display=show?'block':'none';
+  document.getElementById('szBorder').className='sz-border'+(show?' on':'');
+  document.querySelectorAll('.stkb').forEach(b=>{b.className='stkb';if(parseFloat(b.dataset.v)===stake)b.classList.add('on-'+m);});
   updateUI();
 }
 
-function closeInfo() {
-  document.getElementById('parlayInfo').classList.remove('show');
-}
-
-// Intercept parlay tab ? click
-document.getElementById('tabParlay').addEventListener('click', function(e) {
-  if (mode === 'parlay') {
-    document.getElementById('parlayInfo').classList.add('show');
-  }
-});
-
-// ─────────────────────────────────────────────────
-// STAKE
-function setStake(v, btn) {
-  stake = v;
-  document.querySelectorAll('.stkb').forEach(b => {
-    b.className = 'stkb';
-    if (parseFloat(b.dataset.v) === stake) b.classList.add('on-'+mode);
-  });
+function setStake(v){
+  stake=v;
+  document.querySelectorAll('.stkb').forEach(b=>{b.className='stkb';if(parseFloat(b.dataset.v)===stake)b.classList.add('on-'+mode);});
   updateUI();
 }
 
-// ─────────────────────────────────────────────────
-// UI STATE
-function updateUI() {
-  const pitchBtn = document.getElementById('pitchBtn');
-  const selLabel = document.getElementById('selLabel');
-  const totalBet = document.getElementById('totalBet');
-  const parlayOdds = document.getElementById('parlayOddsLine');
-  const colClass = mode === 'foul' ? 'red' : mode === 'parlay' ? 'cyan' : 'gold';
-
-  selLabel.className = colClass;
-  totalBet.className = colClass;
-
-  if (mode === 'parlay') {
-    const n = parlayChain.length;
-    selLabel.textContent = n + ' leg' + (n!==1?'s':'');
-    const combinedMult = parlayChain.reduce((acc, id) => {
-      const el = cells[id]; return el ? acc * parseFloat(el.dataset.mult) : acc;
-    }, 1);
-    totalBet.textContent = '$' + (stake * combinedMult).toFixed(2);
-    parlayOdds.style.display = n>=2 ? 'block':'none';
-    parlayOdds.textContent = 'chain mult: ' + combinedMult.toFixed(1) + 'x';
-    pitchBtn.disabled = n < 2 || parlayActive;
-  } else {
-    const n = selected.size;
-    selLabel.textContent = n + ' sel';
-    totalBet.textContent = '$' + (n * stake).toFixed(2);
-    parlayOdds.style.display = 'none';
-    pitchBtn.disabled = n === 0;
-  }
+function updateUI(){
+  const sl=document.getElementById('selLabel'),tb=document.getElementById('totalBet'),pb=document.getElementById('pitchBtn');
+  const cc=mode==='foul'?'red':mode==='strike'?'cyan':'gold';
+  sl.className=cc;tb.className=cc;
+  const n=selected.size;sl.textContent=n+' sel';tb.textContent='$'+(n*stake).toFixed(2);
+  pb.disabled=n===0;
+  document.getElementById('pitchTypeHud').textContent=PITCH_TYPES[Math.floor(Math.random()*PITCH_TYPES.length)];
 }
 
-function refreshParlayUI() {
-  // Re-colour all parlay cells
-  Object.values(cells).forEach(el => {
-    el.classList.remove('parlay-0','parlay-1','parlay-2','parlay-3','parlay-4');
-    // Clear chain numbers
-    const cn = el.querySelector('.chain-num');
-    if (cn) cn.remove();
-  });
-  parlayChain.forEach((id, i) => {
-    const el = cells[id];
-    if (!el) return;
-    el.classList.add('parlay-'+i);
-    const cn = document.createElement('div');
-    cn.className = 'chain-num';
-    cn.textContent = i+1;
-    el.appendChild(cn);
-  });
-
-  // Update chain display strip
-  const strip = document.getElementById('parlayChain');
-  strip.innerHTML = '';
-  let runMult = 1;
-  parlayChain.forEach((id, i) => {
-    const el = cells[id];
-    if (!el) return;
-    const m = parseFloat(el.dataset.mult);
-    runMult *= m;
-    const colors = ['#00E5FF','#00E676','#FF7D00','#F0B429','#FF2D55'];
-    const step = document.createElement('div');
-    step.className = 'chain-step';
-    step.style.background = colors[i]+'22';
-    step.style.border = '1px solid '+colors[i]+'44';
-    step.style.color = colors[i];
-    step.textContent = `#${i+1} ${el.dataset.label} ${m}x`;
-    strip.appendChild(step);
-    if (i < parlayChain.length-1) {
-      const arr = document.createElement('div');
-      arr.className = 'chain-arrow';
-      arr.textContent = '→';
-      strip.appendChild(arr);
-    }
-  });
-  if (parlayChain.length >= 2) {
-    const totEl = document.createElement('div');
-    totEl.className = 'chain-mult';
-    totEl.textContent = '= ' + runMult.toFixed(1) + 'x';
-    strip.appendChild(totEl);
-  }
-
-  updateUI();
-}
-
-function clearAll(silent) {
+function clearAll(silent){
   selected.clear();
-  parlayChain = [];
-  parlayLeg = 0;
-  parlayActive = false;
-  Object.values(cells).forEach(el => {
-    el.classList.remove('selected','foul-bet','parlay-0','parlay-1','parlay-2','parlay-3','parlay-4','result-land');
-    const cn = el.querySelector('.chain-num');
-    if (cn) cn.remove();
+  Object.values(cells).forEach(el=>el.classList.remove('selected','foul-bet','result-land'));
+  Object.values(szCells).forEach(el=>el.classList.remove('sz-selected','sz-hit'));
+  if(!silent)updateUI();
+}
+
+function throwPitch(){
+  if(pitching)return;pitching=true;document.getElementById('pitchBtn').disabled=true;
+  const feed=document.getElementById('liveFeed'),W=feed.offsetWidth||540,H=feed.offsetHeight||380;
+  if(mode==='strike')doStrikePitch(W,H);
+  else if(mode==='foul')doFoulPitch(W,H);
+  else doNormalPitch(W,H);
+}
+
+function pickRandCell(){const k=Object.keys(cells);return cells[k[Math.floor(Math.random()*k.length)]];}
+function cellXY(el,W,H){return{x:(parseInt(el.dataset.col)+.5)*(W/COLS),y:(parseInt(el.dataset.row)+.5)*(H/ROWS)};}
+
+// ─── STRIKE PITCH ───
+function doStrikePitch(W,H){
+  if(!selected.size){pitching=false;return;}
+  balance-=selected.size*stake;
+  document.getElementById('balVal').textContent='$'+balance.toFixed(2);
+  const szArr=Object.values(szCells);
+  const hitEl=szArr[Math.floor(Math.random()*szArr.length)];
+  const isChase=hitEl.dataset.chase==='1';
+  const isStrike=isChase?Math.random()<.35:Math.random()<.72;
+  animPitchOnly(W,H,hitEl,()=>{
+    hitEl.classList.add('sz-hit');
+    setTimeout(()=>{
+      const id=hitEl.dataset.id,mult=parseFloat(hitEl.dataset.mult),lbl=hitEl.dataset.label;
+      if(isStrike&&selected.has(id)){
+        balance+=stake*mult;document.getElementById('balVal').textContent='$'+balance.toFixed(2);
+        showResult('win','STRIKE!','+$'+(stake*mult).toFixed(2),'Called strike &middot; <strong>'+lbl+'</strong> &middot; '+mult+'x');
+      } else if(isStrike){
+        showResult('loss','WRONG ZONE','-$'+(selected.size*stake).toFixed(2),'Strike called but went to <strong>'+lbl+'</strong>');
+      } else {
+        showResult('loss','BALL!','-$'+(selected.size*stake).toFixed(2),'<strong>'+lbl+'</strong> &mdash; called ball, batter takes it');
+      }
+    },350);
   });
-  document.getElementById('parlayChain').innerHTML = '';
-  if (!silent) updateUI();
 }
 
-// ─────────────────────────────────────────────────
-// PITCH / ANIMATION
-function throwPitch() {
-  if (pitching) return;
-  pitching = true;
-  document.getElementById('pitchBtn').disabled = true;
-
-  const feed = document.getElementById('liveFeed');
-  const W = feed.offsetWidth || 540;
-  const H = feed.offsetHeight || 340;
-
-  if (mode === 'foul') {
-    runFoulPitch(W, H);
-  } else if (mode === 'parlay') {
-    runParlayPitch(W, H);
-  } else {
-    runNormalPitch(W, H);
-  }
-}
-
-function pickRandomCell() {
-  const keys = Object.keys(cells);
-  return cells[keys[Math.floor(Math.random() * keys.length)]];
-}
-
-function animateBall(W, H, landX, landY, cb) {
-  const ball = document.getElementById('ball');
-  ball.style.display = 'block';
-  const startX = W * 0.5, startY = H * 0.94;
-  ball.style.left = startX + 'px';
-  ball.style.top  = startY + 'px';
-
-  const cpX = startX + (landX-startX)*0.2 + (Math.random()-0.5)*80;
-  const cpY = Math.min(startY, landY) - 60 - Math.random()*50;
-  const dur = 5500, t0 = performance.now();
-
-  function step(now) {
-    let t = Math.min((now-t0)/dur, 1);
-    t = t<0.5 ? 2*t*t : -1+(4-2*t)*t;
-    const x = (1-t)*(1-t)*startX + 2*(1-t)*t*cpX + t*t*landX;
-    const y = (1-t)*(1-t)*startY + 2*(1-t)*t*cpY + t*t*landY;
-    ball.style.left = x+'px'; ball.style.top = y+'px';
-    const s = 0.5 + t*0.7;
-    ball.style.transform = `translate(-50%,-50%) scale(${s})`;
-    if (t < 1) requestAnimationFrame(step);
-    else { ball.style.display='none'; cb(); }
+// Ball rushes from pitcher toward batter, drifting to strike zone position — no outfield arc
+function animPitchOnly(W,H,targetEl,cb){
+  const ball=document.getElementById('ball'),cv=document.getElementById('ballTrail');
+  cv.width=W;cv.height=H;const ctx=cv.getContext('2d');
+  ball.style.display='block';
+  const pX=W*.5,pY=H*.68,batY=H*.92;
+  const feedR=document.getElementById('liveFeed').getBoundingClientRect();
+  const tR=targetEl.getBoundingClientRect();
+  const tCX=tR.left-feedR.left+tR.width/2;
+  const dx=tCX-pX;
+  const DUR=820,t0=performance.now();const trail=[];
+  function step(now){
+    let t=Math.min((now-t0)/DUR,1);
+    const et=t<.5?2*t*t:-1+(4-2*t)*t;
+    const x=pX+dx*et*.78;
+    const y=pY+(batY-pY)*et;
+    const sz=0.22+et*1.6;
+    ball.style.left=x+'px';ball.style.top=y+'px';
+    ball.style.transform='translate(-50%,-50%) scale('+sz+')';
+    ball.style.opacity=t>.88?''+(1-(t-.88)/.12):'1';
+    trail.push({x,y});ctx.clearRect(0,0,W,H);
+    for(let i=Math.max(0,trail.length-12);i<trail.length-1;i++){
+      ctx.beginPath();ctx.strokeStyle='rgba(255,255,220,'+(0.07*i/trail.length)+')';
+      ctx.lineWidth=1;ctx.moveTo(trail[i].x,trail[i].y);ctx.lineTo(trail[i+1].x,trail[i+1].y);ctx.stroke();
+    }
+    if(t<1)requestAnimationFrame(step);
+    else{ball.style.display='none';ball.style.opacity='1';ctx.clearRect(0,0,W,H);cb();}
   }
   requestAnimationFrame(step);
 }
 
-function cellCenter(el, W, H) {
-  const cW = W/COLS, cH = H/ROWS;
-  const r = parseInt(el.dataset.row), c = parseInt(el.dataset.col);
-  return { x:(c+0.5)*cW, y:(r+0.5)*cH };
-}
-
-// NORMAL PITCH
-function runNormalPitch(W, H) {
-  balance -= selected.size * stake;
-  document.getElementById('balVal').textContent = '$'+balance.toFixed(2);
-
-  const landEl = pickRandomCell();
-  const landId = landEl.dataset.id;
-  const pos = cellCenter(landEl, W, H);
-
-  animateBall(W, H, pos.x, pos.y, () => {
+// ─── NORMAL PITCH (two-phase: delivery then hit out) ───
+function doNormalPitch(W,H){
+  balance-=selected.size*stake;document.getElementById('balVal').textContent='$'+balance.toFixed(2);
+  const landEl=pickRandCell(),pos=cellXY(landEl,W,H);
+  animTwoPhase(W,H,pos.x,pos.y,()=>{
     landEl.classList.add('result-land');
-    const isWin = selected.has(landId);
-    const mult = parseFloat(landEl.dataset.mult);
-    const zone = landEl.dataset.label;
-
-    if (isWin) {
-      balance += stake * mult;
-      document.getElementById('balVal').textContent = '$'+balance.toFixed(2);
-      showResult('win', isWin ? '🎯 HIT!' : 'MISS', '+$'+(stake*mult).toFixed(2),
-        `Ball landed in <strong>${zone}</strong> · ${mult}x multiplier`,'','');
-    } else {
-      showResult('loss','MISS!','-$'+(selected.size*stake).toFixed(2),
-        `Ball landed in <strong>${zone}</strong> · Better luck next pitch`,'','');
-    }
+    const win=selected.has(landEl.dataset.id),mult=parseFloat(landEl.dataset.mult),zone=landEl.dataset.label;
+    if(win){balance+=stake*mult;document.getElementById('balVal').textContent='$'+balance.toFixed(2);showResult('win','HIT!','+$'+(stake*mult).toFixed(2),'Landed in <strong>'+zone+'</strong> &middot; '+mult+'x');}
+    else showResult('loss','MISS!','-$'+(selected.size*stake).toFixed(2),'Ball went to <strong>'+zone+'</strong>');
   });
 }
 
-// FOUL PITCH
-function runFoulPitch(W, H) {
-  if (selected.size === 0) { pitching=false; return; }
-  balance -= stake;
-  document.getElementById('balVal').textContent = '$'+balance.toFixed(2);
+// ─── FOUL PITCH ───
+function doFoulPitch(W,H){
+  if(!selected.size){pitching=false;return;}
+  balance-=stake;document.getElementById('balVal').textContent='$'+balance.toFixed(2);
+  const isFoul=Math.random()<.30;
+  const foulList=Object.values(cells).filter(e=>e.dataset.type==='foul');
+  let landEl=isFoul&&foulList.length?foulList[Math.floor(Math.random()*foulList.length)]:Object.values(cells).filter(e=>e.dataset.type!=='foul')[Math.floor(Math.random()*Object.values(cells).filter(e=>e.dataset.type!=='foul').length)];
+  const pos=cellXY(landEl,W,H);
+  animTwoPhase(W,H,pos.x,pos.y,()=>{
+    landEl.classList.add('result-land');
+    if(isFoul){
+      const ff=document.getElementById('foulFlash');ff.classList.add('show');setTimeout(()=>ff.classList.remove('show'),600);
+      const isIn=selected.has(landEl.dataset.id),mult=parseFloat(landEl.dataset.mult);
+      if(isIn){balance+=stake*mult;document.getElementById('balVal').textContent='$'+balance.toFixed(2);showResult('foul-yes','FOUL!','+$'+(stake*mult).toFixed(2),'Your zone &middot; <strong>'+landEl.dataset.label+'</strong> &middot; '+mult+'x');}
+      else showResult('foul-yes','FOUL!','-$'+stake.toFixed(2),'Foul ball &mdash; not in your zone');
+    } else showResult('loss','FAIR BALL','-$'+stake.toFixed(2),'No foul &middot; Ball to <strong>'+landEl.dataset.label+'</strong>');
+  });
+}
 
-  // 30% chance of foul
-  const isFoul = Math.random() < 0.30;
-  const foulZoneCells = Object.values(cells).filter(el => el.dataset.type === 'foul');
+// ─── TWO-PHASE ANIMATION: pitch in → contact flash → hit arc out ───
+function animTwoPhase(W,H,lx,ly,cb){
+  const ball=document.getElementById('ball'),cv=document.getElementById('ballTrail');
+  cv.width=W;cv.height=H;const ctx=cv.getContext('2d');
+  ball.style.display='block';
+  const pX=W*.5,pY=H*.68,batX=W*.5,batY=H*.93;
+  const PDUR=700;
+  const cpX=batX+(lx-batX)*.4+(Math.random()-.5)*50;
+  const cpY=Math.min(batY,ly)-(Math.abs(lx-batX)*.55+80+Math.random()*60);
+  const HDUR=5500;
+  let phase=1,t0=performance.now(),trail=[];
 
-  let landEl;
-  if (isFoul && foulZoneCells.length > 0) {
-    landEl = foulZoneCells[Math.floor(Math.random()*foulZoneCells.length)];
-  } else {
-    // Fair ball — pick non-foul cell
-    const fairCells = Object.values(cells).filter(el => el.dataset.type !== 'foul');
-    landEl = fairCells[Math.floor(Math.random()*fairCells.length)];
+  function flash(){
+    const f=document.createElement('div');
+    f.style.cssText='position:absolute;left:'+batX+'px;top:'+batY+'px;width:32px;height:32px;border-radius:50%;background:radial-gradient(circle,rgba(255,240,80,.9),transparent 70%);transform:translate(-50%,-50%);pointer-events:none;z-index:38;transition:opacity .2s;';
+    document.getElementById('liveFeed').appendChild(f);
+    setTimeout(()=>{f.style.opacity='0';setTimeout(()=>f.remove(),220);},85);
   }
 
-  const pos = cellCenter(landEl, W, H);
-  animateBall(W, H, pos.x, pos.y, () => {
-    landEl.classList.add('result-land');
-
-    if (isFoul) {
-      // Flash red
-      const ff = document.getElementById('foulFlash');
-      ff.classList.add('show');
-      setTimeout(() => ff.classList.remove('show'), 600);
-
-      const isInMyZone = selected.has(landEl.dataset.id);
-      const mult = parseFloat(landEl.dataset.mult);
-      if (isInMyZone) {
-        balance += stake * mult;
-        document.getElementById('balVal').textContent = '$'+balance.toFixed(2);
-        showResult('foul-yes','⚡ FOUL!','+$'+(stake*mult).toFixed(2),
-          `Foul ball in your zone · <strong>${landEl.dataset.label}</strong> · ${mult}x`,'','');
-      } else {
-        showResult('foul-yes','⚡ FOUL!','-$'+stake.toFixed(2),
-          `Foul ball — but not in your selected zone.`,'','');
-      }
+  function step(now){
+    const el=now-t0;
+    if(phase===1){
+      let t=Math.min(el/PDUR,1),et=t<.5?2*t*t:-1+(4-2*t)*t;
+      const x=pX+(batX-pX)*et,y=pY+(batY-pY)*et,sz=0.3+et*1.3;
+      ball.style.left=x+'px';ball.style.top=y+'px';
+      ball.style.transform='translate(-50%,-50%) scale('+sz+')';
+      trail.push({x,y,p:1});ctx.clearRect(0,0,W,H);
+      const sl=trail.filter(p=>p.p===1);
+      for(let i=Math.max(0,sl.length-10);i<sl.length-1;i++){ctx.beginPath();ctx.strokeStyle='rgba(255,255,220,0.08)';ctx.lineWidth=1;ctx.moveTo(sl[i].x,sl[i].y);ctx.lineTo(sl[i+1].x,sl[i+1].y);ctx.stroke();}
+      if(t>=1){phase=2;t0=performance.now();trail=[];flash();setTimeout(()=>requestAnimationFrame(step),55);}
+      else requestAnimationFrame(step);
     } else {
-      showResult('loss','FAIR BALL','-$'+stake.toFixed(2),
-        `No foul occurred · Ball went <strong>${landEl.dataset.label}</strong>`,'','');
+      let t=Math.min(el/HDUR,1),et=t<.5?2*t*t:-1+(4-2*t)*t;
+      const x=(1-et)*(1-et)*batX+2*(1-et)*et*cpX+et*et*lx;
+      const y=(1-et)*(1-et)*batY+2*(1-et)*et*cpY+et*et*ly;
+      const sz=Math.max(0.14,1.5-et*1.38);
+      ball.style.left=x+'px';ball.style.top=y+'px';
+      ball.style.transform='translate(-50%,-50%) scale('+sz+')';
+      trail.push({x,y,p:2});ctx.clearRect(0,0,W,H);
+      const hl=trail.filter(p=>p.p===2);
+      for(let i=1;i<hl.length;i++){ctx.beginPath();ctx.strokeStyle='rgba(255,255,170,'+(i/hl.length*.46)+')';ctx.lineWidth=Math.max(.4,2.2*(i/hl.length));ctx.moveTo(hl[i-1].x,hl[i-1].y);ctx.lineTo(hl[i].x,hl[i].y);ctx.stroke();}
+      if(t>=1){ball.style.display='none';ctx.clearRect(0,0,W,H);cb();}
+      else requestAnimationFrame(step);
     }
-  });
+  }
+  requestAnimationFrame(step);
 }
 
-// PARLAY PITCH (one leg at a time)
-function runParlayPitch(W, H) {
-  if (parlayChain.length < 2) { pitching=false; return; }
-  parlayActive = true;
-
-  const legId = parlayChain[parlayLeg];
-  const targetEl = cells[legId];
-  const landEl = pickRandomCell(); // random landing
-  const pos = cellCenter(landEl, W, H);
-
-  balance -= stake;
-  document.getElementById('balVal').textContent = '$'+balance.toFixed(2);
-
-  animateBall(W, H, pos.x, pos.y, () => {
-    landEl.classList.add('result-land');
-    const hit = landEl.dataset.id === legId;
-
-    if (hit) {
-      parlayLeg++;
-      if (parlayLeg >= parlayChain.length) {
-        // All legs complete — WIN
-        const totalMult = parlayChain.reduce((a, id) => {
-          return a * parseFloat(cells[id]?.dataset.mult || 1);
-        }, 1);
-        const winAmt = stake * totalMult;
-        balance += winAmt;
-        document.getElementById('balVal').textContent = '$'+balance.toFixed(2);
-
-        const chainHTML = buildParlayChainHTML(true);
-        showResult('win','⛓ PARLAY!','+$'+winAmt.toFixed(2),
-          `All ${parlayChain.length} legs hit! · ${totalMult.toFixed(1)}x chain`,chainHTML,'');
-
-        parlayLeg = 0;
-        parlayActive = false;
-        pitching = false;
-      } else {
-        // Leg hit, more to go
-        const chainHTML = buildParlayChainHTML(false);
-        showResult('win',`LEG ${parlayLeg} ✓`,
-          `+${parseFloat(targetEl.dataset.mult).toFixed(1)}x`,
-          `<strong>${parlayChain.length - parlayLeg} leg${parlayChain.length-parlayLeg!==1?'s':''} remaining</strong> — next pitch continues chain`,
-          chainHTML, 'NEXT LEG →');
-        pitching = false;
-      }
-    } else {
-      // Miss — chain broken
-      parlayLeg = 0;
-      parlayActive = false;
-      pitching = false;
-      const chainHTML = buildParlayChainHTML(false, true);
-      showResult('loss','CHAIN BROKEN!','-$'+stake.toFixed(2),
-        `Missed leg ${parlayLeg+1} — ball went <strong>${landEl.dataset.label}</strong>`,chainHTML,'');
-    }
-  });
+function showResult(type,title,amount,detail){
+  const ov=document.getElementById('resultOverlay'),bx=document.getElementById('resultBox');
+  bx.className='result-box '+type;
+  document.getElementById('rTitle').textContent=title;
+  document.getElementById('rAmount').textContent=amount;
+  document.getElementById('rDetail').innerHTML=detail;
+  setTimeout(()=>ov.classList.add('show'),200);
 }
 
-function buildParlayChainHTML(allDone, broken) {
-  let html = '';
-  parlayChain.forEach((id, i) => {
-    const el = cells[id];
-    if (!el) return;
-    let cls = 'prc-step';
-    if (i < parlayLeg) cls += ' hit-leg';
-    else if (broken && i === parlayLeg) cls += ' miss-leg';
-    html += `<div class="${cls}"><span>Leg ${i+1}: ${el.dataset.label} ${parseFloat(el.dataset.mult).toFixed(1)}x</span><span>${i<parlayLeg?'✓ HIT':(broken&&i===parlayLeg?'✗ MISS':'...')}</span></div>`;
-  });
-  return html;
-}
-
-// ─────────────────────────────────────────────────
-// RESULT
-function showResult(type, title, amount, detail, chainHTML, nextLabel) {
-  const overlay = document.getElementById('resultOverlay');
-  const box = document.getElementById('resultBox');
-  box.className = 'result-box ' + type;
-  document.getElementById('rTitle').textContent = title;
-  document.getElementById('rAmount').textContent = amount;
-  document.getElementById('rDetail').innerHTML = detail;
-  document.getElementById('parlayResultChain').innerHTML = chainHTML;
-
-  const nb = box.querySelector('.next-btn');
-  nb.textContent = nextLabel || 'NEXT PITCH →';
-
-  setTimeout(() => overlay.classList.add('show'), 200);
-}
-
-function nextPitch() {
+function nextPitch(){
   document.getElementById('resultOverlay').classList.remove('show');
-  Object.values(cells).forEach(el => el.classList.remove('result-land'));
-
-  if (mode === 'parlay' && parlayActive) {
-    // Continue parlay — keep chain, just re-enable pitch
-    document.getElementById('pitchBtn').disabled = false;
-    pitching = false;
-    updateUI();
-    return;
-  }
-
-  pitching = false;
-  clearAll();
-  updateUI();
+  Object.values(cells).forEach(el=>el.classList.remove('result-land'));
+  Object.values(szCells).forEach(el=>el.classList.remove('sz-hit'));
+  pitching=false;clearAll();updateUI();
 }
 
-// ─────────────────────────────────────────────────
-// INIT
-window.addEventListener('load', () => {
-  buildGrid();
-  updateUI();
-});
-window.addEventListener('resize', () => {
-  buildGrid();
-  if (mode==='parlay') refreshParlayUI();
-  updateUI();
-});
+window.addEventListener('load',()=>{buildGrid();updateUI();});
+window.addEventListener('resize',()=>{buildGrid();updateUI();});
 </script>
 </body>
 </html>
