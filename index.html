@@ -1025,7 +1025,7 @@ function animateBall(W, H, landX, landY, cb) {
 
   const cpX = startX + (landX-startX)*0.2 + (Math.random()-0.5)*80;
   const cpY = Math.min(startY, landY) - 60 - Math.random()*50;
-  const dur = 750, t0 = performance.now();
+  const dur = 5500, t0 = performance.now();
 
   function step(now) {
     let t = Math.min((now-t0)/dur, 1);
